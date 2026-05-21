@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Empresa {
+  id         Int        @id @default(autoincrement())
+  nombre     String
+  telefono   String?
+  createdAt  DateTime   @default(now())
+
+  estado             String   @default("activa")   // Si pago o no
+  fechaVencimiento   DateTime?                    // Fecha que vence su pago
+
+  usuarios   Usuario[]
+  unidades   Unidad[]
+  viajes     Viaje[]
+  reservas   Reserva[]
+  operadores Operador[]   
+  rutas      Ruta[]       
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  rol       String
+
+  // Relación con Empresa (la hacemos obligatoria para administradores)
+  empresaId Int
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  // NUEVO: Relación inversa para saber qué unidades registró este usuario
+  unidadesRegistradas Unidad[] 
+}
+
+model Unidad {
+  id        Int      @id @default(autoincrement())
+  numero    String
+  placa     String   @unique
+  tipo      String
+  capacidad Int
+
+  empresaId Int
+  empresa   Empresa  @relation(fields: [empresaId], references: [id])
+
+  // NUEVO: Campo para rastrear al usuario creador
+  usuarioId Int?     // Lo ponemos opcional por si migras datos viejos
+  usuario   Usuario? @relation(fields: [usuarioId], references: [id])
+
+  // NUEVO: Operador asignado a esta unidad
+  operadorId Int?
+  operador   Operador? @relation(fields: [operadorId], references: [id])
+
+  viajes    Viaje[]
+}
+
+model Operador {
+  id         Int     @id @default(autoincrement())
+  nombre     String
+  telefono   String?
+
+  empresaId  Int
+  empresa    Empresa @relation(fields: [empresaId], references: [id])
+
+  // NUEVO: Unidades asignadas a este operador
+  unidades   Unidad[]
+
+  viajes     Viaje[]
+}
+
+model Ruta {
+  id         Int     @id @default(autoincrement())
+  origen     String
+  destino    String
+  precio     Float
+
+  empresaId  Int
+  empresa    Empresa @relation(fields: [empresaId], references: [id])
+
+  viajes     Viaje[]
+}
+
+model Viaje {
+  id          Int     @id @default(autoincrement())
+  fecha       DateTime
+  horaSalida  String
+  tipo        String
+
+  empresaId   Int
+  empresa     Empresa @relation(fields: [empresaId], references: [id])
+
+  unidadId    Int
+  unidad      Unidad @relation(fields: [unidadId], references: [id])
+
+  operadorId  Int?
+  operador    Operador? @relation(fields: [operadorId], references: [id])
+
+  rutaId      Int
+  ruta        Ruta @relation(fields: [rutaId], references: [id])
+
+  reservas    Reserva[]
+}
+
+model Reserva {
+  id         Int     @id @default(autoincrement())
+  nombre     String
+  telefono   String
+  asiento    Int
+  estado     String  @default("reservado")
+
+  empresaId  Int
+  empresa    Empresa @relation(fields: [empresaId], references: [id])
+
+  viajeId    Int
+  viaje      Viaje @relation(fields: [viajeId], references: [id])
+
+  @@unique([viajeId, asiento])
+}
