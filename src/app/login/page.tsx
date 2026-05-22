@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react"; // Importamos iconos
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -31,6 +32,15 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
             <div className="w-full max-w-md bg-[#1e293b] p-8 rounded-2xl border border-slate-700 shadow-2xl">
+                {/* 2. Contenedor de la animación ajustado para tu diseño */}
+                <div className="w-36 h-36 mx-auto mb-2 flex items-center justify-center">
+                    <DotLottieReact
+                        src="/bus.lottie" // Apunta directo al archivo en tu carpeta public
+                        loop
+                        autoplay
+                    />
+                </div>
+
                 <h1 className="text-3xl font-bold text-blue-400 mb-2 text-center">Siti</h1>
                 <p className="text-slate-400 text-center mb-8">Gestión de Transporte</p>
 
